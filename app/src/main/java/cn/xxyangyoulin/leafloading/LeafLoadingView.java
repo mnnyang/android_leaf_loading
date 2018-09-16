@@ -2,7 +2,6 @@ package cn.xxyangyoulin.leafloading;
 
 import android.content.Context;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.RectF;
@@ -28,13 +27,12 @@ public class LeafLoadingView extends View {
 
     private int mBackgroundColor = 0xFFFCE49B;
     private int mProgressColor = 0xFFFFA800;
-    private int mFanColor = Color.WHITE;
+    private int mFanColor = 0xFFFFFFFF;
     private int mFanInColor = 0xFFFDCA48;
 
 
     private Paint mBgPaint;
     private Paint mProgressPaint;
-    private Paint mLinePaint;
     private Paint mFanPaint;
     private Paint mFanFillPaint;
 
@@ -43,9 +41,9 @@ public class LeafLoadingView extends View {
     private int mProgressBarWidth;
     private int mSemicircleRadius;
     private RectF mProgressRectF;
-    private float mCurrentProgressWidth;
 
     private Path mFanLeafPath;
+    private int mLeafWidth = 66;
 
     private int mFanCenterRadius = 4;
     private int fanLeafInMargin = 10;
@@ -55,12 +53,13 @@ public class LeafLoadingView extends View {
     private Path mLeafPath;
     private List<Leaf> mLeafPathArray;
 
-    private int mLeafOnceCycleTime = 2000;
+    private int mLeafOnceCycleTime = 1500;
 
     private Random mRandom = new Random();
     private Paint mTextPaint;
     private int mTextMaxSize = 50;
     private int mFanCircleWidth = 8;
+    private int mLeafCount = 7;
 
     public LeafLoadingView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
@@ -88,11 +87,6 @@ public class LeafLoadingView extends View {
         mProgressPaint.setStyle(Paint.Style.FILL);
         mProgressPaint.setColor(mProgressColor);
 
-        mLinePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        mLinePaint.setStyle(Paint.Style.STROKE);
-        mLinePaint.setColor(Color.RED);
-        mLinePaint.setStrokeWidth(1);
-
         mTextPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         mTextPaint.setColor(mFanColor);
         mTextPaint.setTextAlign(Paint.Align.CENTER);
@@ -114,38 +108,74 @@ public class LeafLoadingView extends View {
 
         mTextMaxSize = (int) (mHeight * 48f / 144 + 0.5f);
 
-        double v = Math.sqrt(Math.pow(mHeight / 2, 2) - Math.pow(mHeight / 2 - mProgressPadding, 2));
+        mLeafWidth = (int) (68 / 996f * w);
+
+        double left = Math.sqrt(Math.pow(mHeight / 2, 2) - Math.pow(mHeight / 2 - mProgressPadding, 2));
         mSemicircleRadius = (int) ((mHeight - mProgressPadding * 2f) / 2);
         mProgressBarWidth = (int) (mWidth - mProgressPadding - mHeight / 2
-                - v);
+                - left);
 
-
-        System.out.println("----w" + w + "--h" + h + "--" + mSemicircleRadius + "--");
         initShape();
+        initLeafArray();
     }
+
 
     private void initShape() {
         mBgRect = new RectF(-mWidth / 2, -mHeight / 2, mWidth / 2, mHeight / 2);
         mProgressRectF = new RectF(0, -mSemicircleRadius, 0, mSemicircleRadius);
         mSemiCircleRectF = new RectF(-mSemicircleRadius, -mSemicircleRadius, mSemicircleRadius, mSemicircleRadius);
 
-        mFanLeafPath = new Path();
-        mFanLeafPath.moveTo(0, -fanLeafInMargin);
-        mFanLeafPath.lineTo(-20, -mHeight / 2 + fanLeafOutMargin);
-        mFanLeafPath.lineTo(20, -mHeight / 2 + fanLeafOutMargin);
-        mFanLeafPath.close();
+        initFanLeafPath();
+        initLeafPath();
 
+    }
+
+    private void initLeafPath() {
         mLeafPath = new Path();
-        mLeafPath.addRect(-12, -12, 12, 12, Path.Direction.CCW);
+        mLeafPath.moveTo(-1 / 20f * mLeafWidth, 4 / 10f * mLeafWidth);
+        mLeafPath.lineTo(1 / 40f * mLeafWidth, 4 / 10f * mLeafWidth);
+        mLeafPath.lineTo(1 / 20f * mLeafWidth, 2 / 10f * mLeafWidth);
+        mLeafPath.cubicTo(
+                1 / 3f * mLeafWidth, 0,
+                1 / 4f * mLeafWidth, -2 / 5f * mLeafWidth,
+                0, -1 / 2f * mLeafWidth);
+
+        mLeafPath.cubicTo(
+                -1 / 4f * mLeafWidth, -2 / 5f * mLeafWidth,
+                -1 / 3f * mLeafWidth, 0,
+                -1 / 20f * mLeafWidth, 2 / 10f * mLeafWidth);
 
         mLeafPath.close();
+    }
 
+    private void initFanLeafPath() {
+        /*风扇叶距离中心的高度*/
+        int fanLeafTop = mHeight / 2 - mFanCircleWidth - fanLeafOutMargin / 2;
+        int fanLeafRectWidth = mHeight / 2 - mFanCircleWidth;
+
+        mFanLeafPath = new Path();
+        mFanLeafPath.moveTo(0, -fanLeafInMargin);
+        mFanLeafPath.cubicTo(fanLeafRectWidth / 4f, -fanLeafRectWidth / 3f,
+                fanLeafRectWidth / 2f, -fanLeafRectWidth + fanLeafOutMargin / 2,
+                0, -fanLeafTop);
+        mFanLeafPath.cubicTo(-fanLeafRectWidth / 2f, -fanLeafRectWidth + fanLeafOutMargin / 2,
+                -fanLeafRectWidth / 4f, -fanLeafRectWidth / 3f,
+                0, -fanLeafInMargin);
+
+
+        mFanLeafPath.close();
+    }
+
+    private void initLeafArray() {
         mLeafPathArray = new ArrayList<>();
-        for (int i = 0; i < 6; i++) {
-            Leaf e = new Leaf(new Random().nextInt(360));
+        for (int i = 0; i < mLeafCount; i++) {
+            Leaf leaf = new Leaf();
 
+            leaf.angle = mRandom.nextInt(360);
+            leaf.direction = mRandom.nextInt(2);
             int randomType = mRandom.nextInt(3);
-            // 随时类型－ 随机振幅
+
+            /*随时类型－ 随机振幅*/
             StartType type = StartType.MIDDLE;
             switch (randomType) {
                 case 0:
@@ -159,11 +189,11 @@ public class LeafLoadingView extends View {
                 default:
                     break;
             }
-            e.type = type;
+            leaf.type = type;
 
-            e.startTime = System.currentTimeMillis() + mRandom.nextInt(mLeafOnceCycleTime);
+            leaf.startTime = System.currentTimeMillis() + mRandom.nextInt(mLeafOnceCycleTime);
 
-            mLeafPathArray.add(e);
+            mLeafPathArray.add(leaf);
         }
     }
 
@@ -171,13 +201,10 @@ public class LeafLoadingView extends View {
         int x;
         int y;
         int angle;
-        int startAngle;
         long startTime;
+        int direction;
         StartType type;
 
-        Leaf(int startAngle) {
-            this.startAngle = startAngle;
-        }
     }
 
     private enum StartType {
@@ -223,13 +250,10 @@ public class LeafLoadingView extends View {
 
     private void setLeafLocation(Leaf leaf) {
 
-        leaf.angle += 5;
-
+        leaf.angle += ((leaf.direction == 0) ? 5 : -5);
 
         long currentTimeMillis = System.currentTimeMillis();
         long timeDiff = currentTimeMillis - leaf.startTime;
-
-        System.out.println("差值：" + timeDiff);
 
         /*未到出场时间*/
         if (timeDiff < 0) {
@@ -245,7 +269,7 @@ public class LeafLoadingView extends View {
         }
 
         /*0 ~ leafOnceCycleTime 之间 - 在飞行途中*/
-        leaf.x = -(int) ((mWidth - mProgressPadding - 25 - mSemicircleRadius) * timeDiff * 1f / mLeafOnceCycleTime);
+        leaf.x = -(int) ((mWidth - mProgressPadding - mLeafWidth / 2 - mSemicircleRadius) * timeDiff * 1f / mLeafOnceCycleTime);
         leaf.y = getLocationY(leaf) - mHeight / 4;
 
     }
@@ -340,25 +364,25 @@ public class LeafLoadingView extends View {
 
     private void drawProgress(Canvas canvas) {
 
-        mCurrentProgressWidth = (mProgressBarWidth * mCurrentProgress * 1.0f / mTotalProgress);
+        float currentProgressWidth = (mProgressBarWidth * mCurrentProgress * 1.0f / mTotalProgress);
 
         canvas.save();
         canvas.translate(mSemicircleRadius + mProgressPadding, mHeight / 2);
 
-        if (mCurrentProgressWidth > 0 &&
+        if (currentProgressWidth > 0 &&
                 /*只花半圆*/
-                mCurrentProgressWidth < mSemicircleRadius) {
+                currentProgressWidth < mSemicircleRadius) {
 
             float degrees = (float) Math.toDegrees(Math.acos((
-                    mSemicircleRadius - mCurrentProgressWidth) * 1f / mSemicircleRadius));
+                    mSemicircleRadius - currentProgressWidth) * 1f / mSemicircleRadius));
 
             canvas.drawArc(mSemiCircleRectF, 90 + 90 - degrees, 2 * degrees,
                     false, mProgressPaint);
-        } else if (mCurrentProgressWidth >= mSemicircleRadius) {
+        } else if (currentProgressWidth >= mSemicircleRadius) {
             /*半圆加矩形*/
             canvas.drawArc(mSemiCircleRectF, 90, 180, false, mProgressPaint);
 
-            mProgressRectF.right = mCurrentProgressWidth - mSemicircleRadius;
+            mProgressRectF.right = currentProgressWidth - mSemicircleRadius;
             canvas.drawRect(mProgressRectF, mProgressPaint);
         }
 
@@ -381,7 +405,7 @@ public class LeafLoadingView extends View {
             mIsFinish = false;
             mFanLeafScaleValue = 1f;
         }
-        updateFanRotate(6);
+        updateFanRotate(7);
         mCurrentProgress = currentProgress;
 
         postInvalidate();

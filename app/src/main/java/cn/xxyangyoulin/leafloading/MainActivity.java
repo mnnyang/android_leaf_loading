@@ -13,14 +13,14 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        final LeafLoadingView leafLoadingView = findViewById(R.id.leaf_loading);
+        final LeafLoadingView leaf_loading1 = findViewById(R.id.leaf_loading);
 
         AppCompatSeekBar seekBar = findViewById(R.id.seek_bar);
         seekBar.setMax(100);
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                leafLoadingView.setCurrentProgress(progress);
+                leaf_loading1.setCurrentProgress(progress);
             }
 
             @Override
@@ -39,7 +39,7 @@ public class MainActivity extends AppCompatActivity {
         animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
-                leafLoadingView.setCurrentProgress((Integer) animation.getAnimatedValue());
+                leaf_loading1.setCurrentProgress((Integer) animation.getAnimatedValue());
             }
         });
         animator.start();
