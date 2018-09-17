@@ -18,10 +18,10 @@
     <cn.xxyangyoulin.leafloading.LeafLoadingView
         android:id="@+id/leaf_loading"
         android:layout_width="match_parent"
-        android:layout_marginLeft="40dp"
-        android:layout_marginRight="40dp"
         android:layout_height="60dp"
         android:layout_gravity="center"
+        android:layout_marginLeft="40dp"
+        android:layout_marginRight="40dp"
         android:layout_marginTop="16dp" />
 
     <android.support.v7.widget.AppCompatSeekBar

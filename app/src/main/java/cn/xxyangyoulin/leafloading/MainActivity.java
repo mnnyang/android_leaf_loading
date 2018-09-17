@@ -1,6 +1,7 @@
 package cn.xxyangyoulin.leafloading;
 
 import android.animation.ValueAnimator;
+import android.graphics.Color;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.AppCompatSeekBar;
@@ -35,7 +36,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         ValueAnimator animator = ValueAnimator.ofInt(0, 100);
-        animator.setDuration(8000);
+        animator.setDuration(3000);
         animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
